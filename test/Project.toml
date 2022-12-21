@@ -13,6 +13,7 @@ QuantumControlBase = "f10a33bc-5a64-497c-be7b-6f86b4f0c2aa"
 QuantumControlTestUtils = "d3fd27c9-1dfb-4e67-b0c0-90d0d87a1e48"
 QuantumPropagators = "7bf12567-5742-4b91-a078-644e72a65fc1"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 

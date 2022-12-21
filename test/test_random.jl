@@ -1,5 +1,5 @@
 using Test
-using Random: Xoshiro
+using StableRNGs: StableRNG
 using LinearAlgebra: norm, eigvals
 import SparseArrays
 
@@ -19,7 +19,7 @@ relerr(a, b) = abs(a - b) / max(abs(a), abs(b))
     @test H isa Matrix{Float64}
     @test size(H) == (N, N)
 
-    rng = Xoshiro(3405091510)
+    rng = StableRNG(3405091510)
 
     ρ = 1.0
     H = random_matrix(N; hermitian=true, complex=false, rng)
@@ -50,7 +50,7 @@ end
     @test H isa Matrix{ComplexF64}
     @test size(H) == (N, N)
 
-    rng = Xoshiro(3727996169)
+    rng = StableRNG(3727996169)
 
     ρ = 1.0
     H = random_matrix(N; hermitian=true, rng)
@@ -81,7 +81,7 @@ end
     @test H isa SparseArrays.SparseMatrixCSC{Float64,Int64}
     @test size(H) == (N, N)
 
-    rng = Xoshiro(1572573603)
+    rng = StableRNG(1572573603)
 
     ρ = 1.0
     d = 0.5
@@ -118,7 +118,7 @@ end
     @test H isa SparseArrays.SparseMatrixCSC{ComplexF64,Int64}
     @test size(H) == (N, N)
 
-    rng = Xoshiro(3677556226)
+    rng = StableRNG(3677556226)
 
     ρ = 1.0
     d = 0.5
@@ -155,7 +155,7 @@ end
     @test H isa Matrix{Float64}
     @test size(H) == (N, N)
 
-    rng = Xoshiro(940283801)
+    rng = StableRNG(1582783931)
 
     ρ = 1.0
     H = random_matrix(N; complex=false, rng)
@@ -177,7 +177,7 @@ end
     @test maximum(imag.(H)) > 0.0
     @test size(H) == (N, N)
 
-    rng = Xoshiro(2137585613)
+    rng = StableRNG(2137585613)
 
     ρ = 1.0
     H = random_matrix(N; rng)
@@ -198,7 +198,7 @@ end
     @test H isa SparseArrays.SparseMatrixCSC{Float64,Int64}
     @test size(H) == (N, N)
 
-    rng = Xoshiro(1710562897)
+    rng = StableRNG(1710562897)
 
     ρ = 1.0
     d = 0.5
@@ -236,7 +236,7 @@ end
     @test maximum(imag.(H)) > 0.0
     @test size(H) == (N, N)
 
-    rng = Xoshiro(2799774491)
+    rng = StableRNG(2799774491)
 
     ρ = 1.0
     d = 0.5
