@@ -7,6 +7,36 @@ using SparseArrays
 export random_state_vector, random_matrix
 
 
+"""Construct a random matrix.
+
+```julia
+Ĥ = random_matrix(N; kwargs...)
+```
+
+by default initializes `Ĥ` as a general complex ``N×N`` matrix with a spectral
+radius of approximately 1.0. Keyword arguments allow to initialize real or
+complex, Hermitian or non-Hermitian, dense or sparse matrices with arbitrary
+spectral radius. The non-zero entries in Ĥ will be uniformly distributed around
+zero, with a range of values that depends on `N` and the desired spectral
+radius.
+
+# Keyword arguments
+
+* `density=1.0`: A number > 0.0 and ≤ 1.0. Any value < 1.0 implies a sparse
+  matrix where `density` is the approximate fraction of non-zero elements to
+  total elements
+* `complex=true`: Whether the matrix should be complex-valued (default) or
+  real-valued
+* `hermitian=false`: Whether the matrix should be general (default) or
+  Hermitian (real eigenvalues)
+* `spectral_radius=1.0`: The approximate spectral radius, i.e. maximum absolute
+  eigenvalue. This is according to [Girko-Ginibri's circular
+  law](https://www.johndcook.com/blog/2018/07/27/circular-law/), in the limit
+  of large ``N``
+* `rng=Random.GLOBAL_RNG`: The random number generator to use. The call
+  `Random.rand(rng, N, N)` must produces a real-valued ``N×N`` matrix with
+  elements uniformly distributed between 0 and 1
+"""
 function random_matrix(
     N;
     density=1.0,

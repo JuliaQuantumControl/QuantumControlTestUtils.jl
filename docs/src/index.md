@@ -4,11 +4,16 @@ CurrentModule = QuantumControlTestUtils
 
 # QuantumControlTestUtils
 
-Documentation for [QuantumControlTestUtils](https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl).
+The [QuantumControlTestUtils](https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl) package collects methods that are used for testing and benchmarking within the [JuliaQuantumControl](https://github.com/JuliaQuantumControl) organization
+
+## Exported Functions
 
 ```@index
 ```
 
+## Reference
+
 ```@autodocs
-Modules = [QuantumControlTestUtils]
+Modules = [QuantumControlTestUtils, QuantumControlTestUtils.RandomObjects]
+Private = false
 ```
