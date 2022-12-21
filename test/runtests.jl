@@ -1,6 +1,13 @@
-using QuantumControlTestUtils
 using Test
+using SafeTestsets
 
-@testset "QuantumControlTestUtils.jl" begin
-    # Write your tests here.
+@time @testset verbose = true "QuantumControlTestUtils" begin
+
+    print("\n* Random objects (test_random.jl):")
+    @time @safetestset "Random objects" begin
+        include("test_random.jl")
+    end
+
+    print("\n")
+
 end
