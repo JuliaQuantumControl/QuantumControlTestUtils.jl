@@ -33,6 +33,11 @@ radius.
   eigenvalue. This is according to [Girko-Ginibri's circular
   law](https://www.johndcook.com/blog/2018/07/27/circular-law/), in the limit
   of large ``N``
+* `exact_spectral_radius=false`: If given as `true`, ensure that the
+  `spectral_radius` is exact. This is done via diagonalization, so it is only
+  feasible for moderately large dimensions N. On the other hand, for large `N`,
+  the `spectral_radius`, respectively the circular law becomes more exact
+  anyway.
 * `rng=Random.GLOBAL_RNG`: The random number generator to use. The call
   `Random.rand(rng, N, N)` must produces a real-valued ``N×N`` matrix with
   elements uniformly distributed between 0 and 1
@@ -43,6 +48,7 @@ function random_matrix(
     complex=true,
     hermitian=false,
     spectral_radius=1.0,
+    exact_spectral_radius=false,
     rng=Random.GLOBAL_RNG
 )
     if (density ≤ 0.0) || (density > 1.0)
@@ -51,29 +57,53 @@ function random_matrix(
     if complex
         if density < 1.0  # sparse matrix
             if hermitian
-                random_hermitian_sparse_matrix(N, spectral_radius, density; rng)
+                random_hermitian_sparse_matrix(
+                    N,
+                    spectral_radius,
+                    density;
+                    rng,
+                    exact_spectral_radius
+                )
             else
-                random_complex_sparse_matrix(N, spectral_radius, density; rng)
+                random_complex_sparse_matrix(
+                    N,
+                    spectral_radius,
+                    density;
+                    rng,
+                    exact_spectral_radius
+                )
             end
         else  # dense matrix
             if hermitian
-                random_hermitian_matrix(N, spectral_radius; rng)
+                random_hermitian_matrix(N, spectral_radius; rng, exact_spectral_radius)
             else
-                random_complex_matrix(N, spectral_radius; rng)
+                random_complex_matrix(N, spectral_radius; rng, exact_spectral_radius)
             end
         end
     else  # real-valued matrix
         if density < 1.0  # sparse matrix
             if hermitian
-                random_hermitian_sparse_real_matrix(N, spectral_radius, density; rng)
+                random_hermitian_sparse_real_matrix(
+                    N,
+                    spectral_radius,
+                    density;
+                    rng,
+                    exact_spectral_radius
+                )
             else
-                random_real_sparse_matrix(N, spectral_radius, density; rng)
+                random_real_sparse_matrix(
+                    N,
+                    spectral_radius,
+                    density;
+                    rng,
+                    exact_spectral_radius
+                )
             end
         else  # dense matrix
             if hermitian
-                random_hermitian_real_matrix(N, spectral_radius; rng)
+                random_hermitian_real_matrix(N, spectral_radius; rng, exact_spectral_radius)
             else
-                random_real_matrix(N, spectral_radius; rng)
+                random_real_matrix(N, spectral_radius; rng, exact_spectral_radius)
             end
         end
     end
@@ -86,11 +116,18 @@ end
 random_complex_matrix(N, ρ)
 ```
 """
-function random_complex_matrix(N, ρ; rng=Random.GLOBAL_RNG)
+function random_complex_matrix(N, ρ; rng=Random.GLOBAL_RNG, exact_spectral_radius=false)
     Δ = √(12 / N)
     X = Δ * (rand(rng, N, N) .- 0.5)
     Y = Δ * (rand(rng, N, N) .- 0.5)
     H = ρ * (X + Y * 1im) / √2
+    if exact_spectral_radius
+        λ = eigvals(H)
+        Δ = maximum(abs.(λ))
+        return (ρ / Δ) * H
+    else
+        return H
+    end
 end
 
 
@@ -100,25 +137,41 @@ end
 random_real_matrix(N, ρ)
 ```
 """
-function random_real_matrix(N, ρ; rng=Random.GLOBAL_RNG)
+function random_real_matrix(N, ρ; rng=Random.GLOBAL_RNG, exact_spectral_radius=false)
     Δ = √(12 / N)
     X = Δ * (rand(rng, N, N) .- 0.5)
     H = ρ * X
+    if exact_spectral_radius
+        λ = eigvals(H)
+        Δ = maximum(abs.(λ))
+        return (ρ / Δ) * H
+    else
+        return H
+    end
 end
 
 
-"""Construct a random Hermitian matrix of size N×N with spectral radius ρ.
+"""Construct a random Hermitian complex matrix of size N×N with spectral radius ρ.
 
 ```julia
 random_hermitian_matrix(N, ρ)
 ```
 """
-function random_hermitian_matrix(N, ρ; rng=Random.GLOBAL_RNG)
+function random_hermitian_matrix(N, ρ; rng=Random.GLOBAL_RNG, exact_spectral_radius=false)
     Δ = √(12 / N)
     X = Δ * (rand(rng, N, N) .- 0.5)
     Y = Δ * (rand(rng, N, N) .- 0.5)
     Z = (X + Y * 1im) / √2
     H = ρ * (Z + Z') / (2 * √2)
+    if exact_spectral_radius
+        λ = eigvals(H)
+        λ₀ = λ[1]
+        Δ = λ[end] - λ₀
+        H_norm = (H - λ₀ * I) / Δ
+        return 2 * ρ * H_norm - ρ * I
+    else
+        return H
+    end
 end
 
 
@@ -128,10 +181,24 @@ end
 random_hermitian_real_matrix(N, ρ)
 ```
 """
-function random_hermitian_real_matrix(N, ρ; rng=Random.GLOBAL_RNG)
+function random_hermitian_real_matrix(
+    N,
+    ρ;
+    rng=Random.GLOBAL_RNG,
+    exact_spectral_radius=false
+)
     Δ = √(12 / N)
     X = Δ * (rand(N, N) .- 0.5)
     H = ρ * (X + X') / (2 * √2)
+    if exact_spectral_radius
+        λ = eigvals(H)
+        λ₀ = λ[1]
+        Δ = λ[end] - λ₀
+        H_norm = (H - λ₀ * I) / Δ
+        return 2 * ρ * H_norm - ρ * I
+    else
+        return H
+    end
 end
 
 
@@ -145,7 +212,13 @@ returns a matrix of size N×N with spectral radius ρ and the given density
 (number between zero and one that is the approximate fraction of non-zero
 elements).
 """
-function random_complex_sparse_matrix(N, ρ, density; rng=Random.GLOBAL_RNG)
+function random_complex_sparse_matrix(
+    N,
+    ρ,
+    density;
+    rng=Random.GLOBAL_RNG,
+    exact_spectral_radius=false
+)
     p = 1 - √(1 - density)
     Δ = √(12 / (p * N))
     X = sprand(rng, N, N, p)
@@ -153,6 +226,13 @@ function random_complex_sparse_matrix(N, ρ, density; rng=Random.GLOBAL_RNG)
     Y = sprand(rng, N, N, p)
     Y.nzval .= Δ .* (Y.nzval .- 0.5)
     H = ρ * (X + Y * 1im) / √2
+    if exact_spectral_radius
+        λ = eigvals(Array(H))
+        Δ = maximum(abs.(λ))
+        return (ρ / Δ) * H
+    else
+        return H
+    end
 end
 
 
@@ -166,12 +246,25 @@ returns a matrix of size N×N with spectral radius ρ and the given density
 (number between zero and one that is the approximate fraction of non-zero
 elements).
 """
-function random_real_sparse_matrix(N, ρ, density; rng=Random.GLOBAL_RNG)
+function random_real_sparse_matrix(
+    N,
+    ρ,
+    density;
+    rng=Random.GLOBAL_RNG,
+    exact_spectral_radius=false
+)
     p = density
     Δ = √(12 / (p * N))
     X = sprand(rng, N, N, density)
     X.nzval .= Δ .* (X.nzval .- 0.5)
     H = ρ * X
+    if exact_spectral_radius
+        λ = eigvals(Array(H))
+        Δ = maximum(abs.(λ))
+        return (ρ / Δ) * H
+    else
+        return H
+    end
 end
 
 
@@ -185,7 +278,13 @@ returns a matrix of size N×N with spectral radius ρ and the given density
 (number between zero and one that is the approximate fraction of non-zero
 elements).
 """
-function random_hermitian_sparse_matrix(N, ρ, density; rng=Random.GLOBAL_RNG)
+function random_hermitian_sparse_matrix(
+    N,
+    ρ,
+    density;
+    rng=Random.GLOBAL_RNG,
+    exact_spectral_radius=false
+)
     p = 1 - √(1 - density)
     Δ = √(12 / (p * N))
     X = sprand(rng, N, N, p)
@@ -193,7 +292,16 @@ function random_hermitian_sparse_matrix(N, ρ, density; rng=Random.GLOBAL_RNG)
     Y = copy(X)
     Y.nzval .= Δ * (rand(rng, length(Y.nzval)) .- 0.5)
     Z = (X + Y * 1im) / √2
-    return ρ * (Z + Z') / (2 * √2)
+    H = ρ * (Z + Z') / (2 * √2)
+    if exact_spectral_radius
+        λ = eigvals(Array(H))
+        λ₀ = λ[1]
+        Δ = λ[end] - λ₀
+        H_norm = (H - λ₀ * I) / Δ
+        return 2 * ρ * H_norm - ρ * I
+    else
+        return H
+    end
 end
 
 
@@ -207,12 +315,27 @@ returns a matrix of size N×N with spectral radius ρ and the given density
 (number between zero and one that is the approximate fraction of non-zero
 elements).
 """
-function random_hermitian_sparse_real_matrix(N, ρ, density; rng=Random.GLOBAL_RNG)
+function random_hermitian_sparse_real_matrix(
+    N,
+    ρ,
+    density;
+    rng=Random.GLOBAL_RNG,
+    exact_spectral_radius=false
+)
     p = 1 - √(1 - density)
     Δ = √(12 / (p * N))
     X = sprand(rng, N, N, p)
     X.nzval .= Δ .* (X.nzval .- 0.5)
-    return ρ * (X + X') / (2 * √2)
+    H = ρ * (X + X') / (2 * √2)
+    if exact_spectral_radius
+        λ = eigvals(Array(H))
+        λ₀ = λ[1]
+        Δ = λ[end] - λ₀
+        H_norm = (H - λ₀ * I) / Δ
+        return 2 * ρ * H_norm - ρ * I
+    else
+        return H
+    end
 end
 
 

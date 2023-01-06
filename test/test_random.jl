@@ -41,6 +41,20 @@ relerr(a, b) = abs(a - b) / max(abs(a), abs(b))
     @test λ[1] ≊ -ρ
     @test λ[end] ≊ ρ
 
+    ρ = 3.0
+    H = random_matrix(
+        N;
+        hermitian=true,
+        complex=false,
+        spectral_radius=ρ,
+        rng,
+        exact_spectral_radius=true
+    )
+    @test H isa Matrix{Float64}
+    λ = sort(eigvals(H))
+    @test λ[1] ≈ -ρ
+    @test λ[end] ≈ ρ
+
 end
 
 
@@ -71,6 +85,13 @@ end
     #@show relerr(λ[1], -ρ), relerr(λ[end], ρ)
     @test λ[1] ≊ -ρ
     @test λ[end] ≊ ρ
+
+    ρ = 3.0
+    H = random_matrix(N; hermitian=true, spectral_radius=ρ, rng, exact_spectral_radius=true)
+    @test H isa Matrix{ComplexF64}
+    λ = sort(eigvals(H))
+    @test λ[1] ≈ -ρ
+    @test λ[end] ≈ ρ
 
 end
 
@@ -109,6 +130,22 @@ end
     @test λ[1] ≊ -ρ
     @test λ[end] ≊ ρ
 
+    ρ = 3.0
+    d = 0.2
+    H = random_matrix(
+        N;
+        density=d,
+        hermitian=true,
+        complex=false,
+        spectral_radius=ρ,
+        rng,
+        exact_spectral_radius=true
+    )
+    @test H isa SparseArrays.SparseMatrixCSC{Float64,Int64}
+    λ = sort(eigvals(Array(H)))
+    @test λ[1] ≈ -ρ
+    @test λ[end] ≈ ρ
+
 end
 
 
@@ -146,6 +183,21 @@ end
     @test λ[1] ≊ -ρ
     @test λ[end] ≊ ρ
 
+    ρ = 3.0
+    d = 0.2
+    H = random_matrix(
+        N;
+        density=d,
+        hermitian=true,
+        spectral_radius=ρ,
+        rng,
+        exact_spectral_radius=true
+    )
+    @test H isa SparseArrays.SparseMatrixCSC{ComplexF64,Int64}
+    λ = sort(eigvals(Array(H)))
+    @test λ[1] ≈ -ρ
+    @test λ[end] ≈ ρ
+
 end
 
 
@@ -166,6 +218,13 @@ end
     λ_max = maximum(abs.(λ))
     #@show relerr(λ_max, ρ)
     @test λ_max ≊ ρ
+
+    ρ = 3.0
+    H = random_matrix(N; spectral_radius=ρ, complex=false, rng, exact_spectral_radius=true)
+    @test H isa Matrix{Float64}
+    λ = eigvals(H)
+    λ_max = maximum(abs.(λ))
+    @test λ_max ≈ ρ
 
 end
 
@@ -188,6 +247,13 @@ end
     λ_max = maximum(abs.(λ))
     #@show relerr(λ_max, ρ)
     @test λ_max ≊ ρ
+
+    ρ = 3.0
+    H = random_matrix(N; spectral_radius=ρ, rng, exact_spectral_radius=true)
+    @test H isa Matrix{ComplexF64}
+    λ = eigvals(H)
+    λ_max = maximum(abs.(λ))
+    @test λ_max ≈ ρ
 
 end
 
@@ -226,6 +292,21 @@ end
     #@show relerr(λ_max, ρ)
     @test λ_max ≊ ρ
 
+    ρ = 3.0
+    d = 0.2
+    H = random_matrix(
+        N;
+        density=d,
+        complex=false,
+        spectral_radius=ρ,
+        rng,
+        exact_spectral_radius=true
+    )
+    @test H isa SparseArrays.SparseMatrixCSC{Float64,Int64}
+    λ = eigvals(Array(H))
+    λ_max = maximum(abs.(λ))
+    @test λ_max ≈ ρ
+
 end
 
 
@@ -263,6 +344,14 @@ end
     λ_max = maximum(abs.(λ))
     #@show relerr(λ_max, ρ)
     @test λ_max ≊ ρ
+
+    ρ = 3.0
+    d = 0.2
+    H = random_matrix(N; density=d, spectral_radius=ρ, rng, exact_spectral_radius=true)
+    @test H isa SparseArrays.SparseMatrixCSC{ComplexF64,Int64}
+    λ = eigvals(Array(H))
+    λ_max = maximum(abs.(λ))
+    @test λ_max ≈ ρ
 
 end
 
