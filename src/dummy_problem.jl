@@ -1,12 +1,20 @@
+module DummyOptimization
+
+export dummy_control_problem, optimize_with_dummy_method
+
+using Printf
+
 using QuantumPropagators.Controls: get_controls, discretize, discretize_on_midpoints
 using QuantumControl: Objective, ControlProblem
+
+using ..RandomObjects: random_matrix
 
 
 """Set up a dummy control problem.
 
 ```julia
 problem = dummy_control_problem(;
-    N=10, n_objectives=1, n_controls=1, n_steps=50, dt=1.0, sparsity=0.5,
+    N=10, n_objectives=1, n_controls=1, n_steps=50, dt=1.0, density=0.5,
     complex_operators=true, hermitian=true, kwargs...)
 ```
 
@@ -22,8 +30,8 @@ Sets up a control problem with random (sparse) Hermitian matrices.
   normalized on the intervals of the time grid.
 * `n_steps`: The number of time steps (intervals of the time grid)
 * `dt`: The time step
-* `sparsity`: The sparsity of the Hamiltonians, as a number between 0.0 and
-  1.0. For `sparsity=1.0`, the Hamiltonians will be dense matrices.
+* `density`: The density of the Hamiltonians, as a number between 0.0 and
+  1.0. For `density=1.0`, the Hamiltonians will be dense matrices.
 * `complex_operators`: Whether or not the drift/control operators will be
   complex-valued or real-valued.
 * `hermitian`: Whether or not all drift/control operators will be Hermitian matrices.
@@ -36,7 +44,7 @@ function dummy_control_problem(;
     n_controls=1,
     n_steps=50,
     dt=1.0,
-    sparsity=0.5,
+    density=0.5,
     complex_operators=true,
     hermitian=true,
     kwargs...
@@ -50,39 +58,11 @@ function dummy_control_problem(;
     end
     controls = [discretize(pulse, tlist) for pulse in pulses]
 
-    function random_op(N, ρ, sparsity, complex_operators, hermitian)
-        if sparsity < 1.0
-            if hermitian
-                if complex_operators
-                    H = random_hermitian_sparse_matrix(N, ρ, sparsity)
-                end
-            else
-                if complex_operators
-                    H = random_complex_sparse_matrix(N, ρ, sparsity)
-                end
-            end
-        else
-            if hermitian
-                if complex_operators
-                    H = random_hermitian_matrix(N, ρ)
-                else
-                    H = random_hermitian_real_matrix(N, ρ)
-                end
-            else
-                if complex_operators
-                    H = random_complex_matrix(N, ρ)
-                else
-                    H = random_real_matrix(N, ρ)
-                end
-            end
-        end
-    end
-
     hamiltonian = []
-    H_0 = random_op(N, 1.0, sparsity, complex_operators, hermitian)
+    H_0 = random_matrix(N; density, hermitian, complex=complex_operators)
     push!(hamiltonian, H_0)
     for control ∈ controls
-        H_c = random_op(N, 1.0, sparsity, complex_operators, hermitian)
+        H_c = random_matrix(N; density, hermitian, complex=complex_operators)
         push!(hamiltonian, (H_c, control))
     end
 
@@ -240,4 +220,6 @@ function optimize_with_dummy_method(problem)
         wrk.result.optimized_controls[l] = discretize(ϵ⁽ⁱ⁾[l], problem.tlist)
     end
     return wrk.result
+end
+
 end
