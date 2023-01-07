@@ -4,7 +4,9 @@ using Random
 using LinearAlgebra
 using SparseArrays
 
-export random_state_vector, random_matrix
+using QuantumPropagators.Generators: Generator
+
+export random_state_vector, random_matrix, random_dynamic_generator
 
 
 """Construct a random matrix.
@@ -35,12 +37,17 @@ radius.
   of large ``N``
 * `exact_spectral_radius=false`: If given as `true`, ensure that the
   `spectral_radius` is exact. This is done via diagonalization, so it is only
-  feasible for moderately large dimensions N. On the other hand, for large `N`,
-  the `spectral_radius`, respectively the circular law becomes more exact
+  feasible for moderately large dimensions `N`. On the other hand, for large
+  `N`, the `spectral_radius`, respectively the circular law becomes more exact
   anyway.
 * `rng=Random.GLOBAL_RNG`: The random number generator to use. The call
   `Random.rand(rng, N, N)` must produces a real-valued ``N×N`` matrix with
   elements uniformly distributed between 0 and 1
+
+# See also
+
+* [`random_dynamic_generator`](@ref) — generate a time-dependent random
+Hamiltonian.
 """
 function random_matrix(
     N;
@@ -107,6 +114,95 @@ function random_matrix(
             end
         end
     end
+end
+
+
+"""Construct a random dynamic generator (time-dependent Hamiltonian).
+
+```julia
+tlist = collection(range(0, 100, length=1001))
+Ĥ = random_dynamic_generator(N, tlist; kwargs...)
+```
+
+by default initializes `Ĥ` as a real Hermitian `Generator` of dimension `N`.
+The generator consists of one random drift term and one random control term
+with a random control amplitude value ∈ [-1, 1] for each interval of the given
+`tlist`. The spectral envelope of the generator will be 1.0. That is, the
+largest absolute eigenvalue at any point in time should be less than 1.0. The
+larger `N`, the more tightly the envelope will fit.
+
+# Keyword arguments
+
+* `number_of_controls=1`: The number of control terms in the generator.
+* `density=1.0`: A number > 0.0 and ≤ 1.0. Any value < 1.0 implies a sparse
+  matrix where `density` is the approximate fraction of non-zero elements to
+  total elements
+* `complex=false`: Whether the matrix should be real-valued (default) or
+  complex-valued
+* `hermitian=false`: Whether the matrix should be Hermitian (have real
+  eigenvalues, default) or non-Hermitian (eigenvalues in the complex plane with
+  a circle of the `spectral_envelope`)
+* `spectral_envelope=1.0`: An upper bound for the spectral radius for the
+  generator evaluated at different points in time. For large `N`, the spectral
+  envelope should be approximately touched for the extremal pulse amplitudes,
+  ±1. Note that the *average* spectral radius is always well withing the
+  spectral_envelope`)
+* `exact_spectral_envelope=false`: If true, the spectral radius when plugging
+  in the extremal pulse amplitudes ±1 will touch exactly the specified
+  `spectral_envelope`. This is done via diagonalization, so it is only
+  feasible for moderately large dimensions `N`.
+* `rng=Random.GLOBAL_RNG`: The random number generator to use. The call
+  `Random.rand(rng, N, N)` must produces a real-valued ``N×N`` matrix with
+  elements uniformly distributed between 0 and 1
+
+# See also
+
+* [`random_matrix`](@ref) — generate a *static* random Hamiltonian
+"""
+function random_dynamic_generator(
+    N,
+    tlist;
+    number_of_controls=1,
+    density=1.0,
+    complex=false,
+    hermitian=true,
+    spectral_envelope=1.0,
+    exact_spectral_envelope=false,
+    rng=Random.GLOBAL_RNG
+)
+    ρ = spectral_envelope / sqrt(number_of_controls + 1)
+    # ρ is an adjusted spectral radius, under the assumption that if you sum N
+    # (large) random matrices with spectral radius 1.0, the result should have
+    # spectral radius close to √N (since large random matrices are likely to be
+    # close orthogonal)
+    H₀ = random_matrix(N; density, complex, hermitian, spectral_radius=ρ, rng)
+    ops = [H₀]
+    amplitudes = Vector{Float64}[]
+    for l = 1:number_of_controls
+        ϵ::Vector{Float64} = 2 .* (rand(rng, length(tlist) - 1) .- 0.5)
+        ϵ .= ϵ ./ maximum(ϵ)
+        push!(amplitudes, ϵ)
+        Hₗ = random_matrix(N; density, complex, hermitian, spectral_radius=ρ, rng)
+        push!(ops, Hₗ)
+    end
+    if exact_spectral_envelope
+        H_pos = H₀
+        H_neg = H₀
+        for Hₗ in ops[2:end]
+            H_pos = H_pos + Hₗ
+            H_neg = H_neg - Hₗ
+        end
+        λ_pos = eigvals(Array(H_pos))
+        λ_neg = eigvals(Array(H_neg))
+        Δ_pos = maximum(abs.(λ_pos))
+        Δ_neg = maximum(abs.(λ_neg))
+        Δ = max(Δ_pos, Δ_neg)
+        η = spectral_envelope / Δ
+        for Hₗ in ops
+            lmul!(η, Hₗ)
+        end
+    end
+    return Generator(ops, amplitudes)
 end
 
 

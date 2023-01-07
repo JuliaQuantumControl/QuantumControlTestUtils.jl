@@ -3,7 +3,11 @@ using StableRNGs: StableRNG
 using LinearAlgebra: norm, eigvals
 import SparseArrays
 
-using QuantumControlTestUtils.RandomObjects  # random_matrix, random_state_vector
+using QuantumPropagators.Controls: evaluate
+using QuantumPropagators.Generators: Generator
+
+using QuantumControlTestUtils.RandomObjects
+# random_matrix, random_state_vector, random_dynamic_generator
 
 N = 100
 
@@ -352,6 +356,96 @@ end
     λ = eigvals(Array(H))
     λ_max = maximum(abs.(λ))
     @test λ_max ≈ ρ
+
+end
+
+
+@testset "Random dynamic generator" begin
+
+
+    tlist = collect(range(0, 100, length=1001))
+
+    H = random_dynamic_generator(N, tlist)
+    @test H isa Generator{Matrix{Float64},Vector{Float64}}
+    @test length(H.ops) == 2
+
+    rng = StableRNG(2316393754)
+
+    H = random_dynamic_generator(N, tlist; rng)
+    H_n = Array(evaluate(H, tlist, 1))
+    @test size(H_n) == (N, N)
+    λ = eigvals(H_n)
+    @test λ isa Vector{Float64}
+    @test -1 < λ[1] < 0
+    @test 0 < λ[end] < 1
+
+    H = random_dynamic_generator(N, tlist; rng, number_of_controls=3)
+    @test H isa Generator{Matrix{Float64},Vector{Float64}}
+    @test length(H.ops) == 4
+
+    H = random_dynamic_generator(N, tlist; rng, complex=true)
+    @test H isa Generator{Matrix{ComplexF64},Vector{Float64}}
+
+
+    H = random_dynamic_generator(N, tlist; hermitian=false)
+    @test H isa Generator{Matrix{Float64},Vector{Float64}}
+    @test length(H.ops) == 2
+    H_n = Array(evaluate(H, tlist, 1))
+    λ = eigvals(H_n)
+    @test λ isa Vector{ComplexF64}
+
+
+    H = random_dynamic_generator(
+        N,
+        tlist;
+        rng,
+        hermitian=true,
+        density=0.5,
+        spectral_envelope=2.0
+    )
+    @test H isa Generator{SparseArrays.SparseMatrixCSC{Float64,Int64},Vector{Float64}}
+    λ = reduce(vcat, [eigvals(Array(evaluate(H, tlist, n))) for n = 1:20:1000])
+    @test λ isa Vector{Float64}
+    @test -2 < λ[1] < -1
+    @test 1 < λ[end] < 2
+
+    H = random_dynamic_generator(
+        N,
+        tlist;
+        rng,
+        hermitian=true,
+        density=0.5,
+        spectral_envelope=2.0,
+        exact_spectral_envelope=true
+    )
+    @test H isa Generator{SparseArrays.SparseMatrixCSC{Float64,Int64},Vector{Float64}}
+    λ = vcat(
+        eigvals(Array(evaluate(H, tlist, 1; vals_dict=IdDict(H.amplitudes[1] => 1.0)))),
+        eigvals(Array(evaluate(H, tlist, 1; vals_dict=IdDict(H.amplitudes[1] => -1.0))))
+    )
+    @test λ isa Vector{Float64}
+    @test abs(maximum(abs.(λ)) - 2.0) < 1e-5  # exact!
+    λ = reduce(vcat, [eigvals(Array(evaluate(H, tlist, n))) for n = 1:50:1000])
+    @test 1.9 < maximum(abs.(λ)) ≤ 2.0
+
+    H = random_dynamic_generator(
+        N,
+        tlist;
+        rng,
+        hermitian=false,
+        density=0.5,
+        spectral_envelope=2.0,
+        exact_spectral_envelope=true
+    )
+    @test H isa Generator{SparseArrays.SparseMatrixCSC{Float64,Int64},Vector{Float64}}
+    λ = vcat(
+        eigvals(Array(evaluate(H, tlist, 1; vals_dict=IdDict(H.amplitudes[1] => 1.0)))),
+        eigvals(Array(evaluate(H, tlist, 1; vals_dict=IdDict(H.amplitudes[1] => -1.0))))
+    )
+    @test λ isa Vector{ComplexF64}
+    @test abs(maximum(abs.(λ)) - 2.0) < 1e-5  # exact!
+    λ = reduce(vcat, [eigvals(Array(evaluate(H, tlist, n))) for n = 1:50:1000])
+    @test 1.9 < maximum(abs.(λ)) ≤ 2.0
 
 end
 
