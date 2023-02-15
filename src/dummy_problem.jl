@@ -225,7 +225,8 @@ function optimize_with_dummy_method(problem)
 end
 
 
-QuantumControl.optimize(problem, method::Val{:dummymethod}) = optimize_with_dummy_method(problem)
+QuantumControl.optimize(problem, method::Val{:dummymethod}) =
+    optimize_with_dummy_method(problem)
 
 
 end
