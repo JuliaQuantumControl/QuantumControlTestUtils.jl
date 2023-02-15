@@ -4,6 +4,7 @@ authors = ["Michael Goerz <mail@michaelgoerz.net"]
 version = "0.1.0"
 
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LocalCoverage = "5f6e1e16-694c-5876-87ef-16b5274f298e"
@@ -17,6 +18,6 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 [compat]
 Coverage = "^1.4"
 LocalCoverage = "0.4"
-QuantumPropagators = "0.3.0"
 QuantumControl = "0.5.0"
+QuantumPropagators = "0.3.0"
 julia = "1.6"

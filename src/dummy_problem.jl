@@ -3,11 +3,13 @@ module DummyOptimization
 export dummy_control_problem, optimize_with_dummy_method
 
 using Printf
+using LinearAlgebra
 
 using QuantumPropagators.Controls: get_controls, discretize, discretize_on_midpoints
 using QuantumControl: Objective, ControlProblem
+import QuantumControl
 
-using ..RandomObjects: random_matrix
+using ..RandomObjects: random_matrix, random_state_vector
 
 
 """Set up a dummy control problem.
@@ -74,7 +76,7 @@ function dummy_control_problem(;
         ) for k = 1:n_objectives
     ]
 
-    return ControlProblem(
+    return ControlProblem(;
         objectives=objectives,
         pulse_options=Dict(
             control => Dict(:lambda_a => 1.0, :update_shape => t -> 1.0) for
@@ -221,5 +223,9 @@ function optimize_with_dummy_method(problem)
     end
     return wrk.result
 end
+
+
+QuantumControl.optimize(problem, method::Val{:dummymethod}) = optimize_with_dummy_method(problem)
+
 
 end

@@ -1,4 +1,5 @@
 [deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
@@ -16,6 +17,7 @@ QuantumPropagators = "7bf12567-5742-4b91-a078-644e72a65fc1"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TwoQubitWeylChamber = "cad078a0-0012-46f4-b55e-a945d44e115b"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
