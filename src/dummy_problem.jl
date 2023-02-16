@@ -5,7 +5,7 @@ export dummy_control_problem, optimize_with_dummy_method
 using Printf
 using LinearAlgebra
 
-using QuantumPropagators.Controls: get_controls, discretize, discretize_on_midpoints
+using QuantumControl.Controls: get_controls, discretize, discretize_on_midpoints
 using QuantumControl: Objective, ControlProblem
 import QuantumControl
 

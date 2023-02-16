@@ -3,8 +3,8 @@ using StableRNGs: StableRNG
 using LinearAlgebra: norm, eigvals
 import SparseArrays
 
-using QuantumPropagators.Controls: evaluate
-using QuantumPropagators.Generators: Generator
+using QuantumControl.Controls: evaluate
+using QuantumControl.Generators: Generator
 
 using QuantumControlTestUtils.RandomObjects
 # random_matrix, random_state_vector, random_dynamic_generator
