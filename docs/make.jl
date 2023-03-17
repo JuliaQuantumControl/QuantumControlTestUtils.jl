@@ -1,3 +1,4 @@
+using Pkg
 using QuantumControlTestUtils
 using Documenter
 
