@@ -2,6 +2,7 @@ module DummyOptimization
 
 export dummy_control_problem, optimize_with_dummy_method
 
+using Random
 using Printf
 using LinearAlgebra
 
@@ -17,7 +18,7 @@ using ..RandomObjects: random_matrix, random_state_vector
 ```julia
 problem = dummy_control_problem(;
     N=10, n_objectives=1, n_controls=1, n_steps=50, dt=1.0, density=0.5,
-    complex_operators=true, hermitian=true, kwargs...)
+    complex_operators=true, hermitian=true, rng, kwargs...)
 ```
 
 Sets up a control problem with random (sparse) Hermitian matrices.
@@ -36,7 +37,10 @@ Sets up a control problem with random (sparse) Hermitian matrices.
   1.0. For `density=1.0`, the Hamiltonians will be dense matrices.
 * `complex_operators`: Whether or not the drift/control operators will be
   complex-valued or real-valued.
-* `hermitian`: Whether or not all drift/control operators will be Hermitian matrices.
+* `hermitian`: Whether or not all drift/control operators will be Hermitian
+  matrices.
+* `rng=Random.GLOBAL_RNG`: The random number generator to use.  See
+  [`random_matrix`](@ref) and [`random_state_vector`](@ref).
 * `kwargs`: All other keyword arguments are passed on to
   [`ControlProblem`](@ref)
 """
@@ -49,6 +53,7 @@ function dummy_control_problem(;
     density=0.5,
     complex_operators=true,
     hermitian=true,
+    rng=Random.GLOBAL_RNG,
     kwargs...
 )
 
@@ -61,18 +66,18 @@ function dummy_control_problem(;
     controls = [discretize(pulse, tlist) for pulse in pulses]
 
     hamiltonian = []
-    H_0 = random_matrix(N; density, hermitian, complex=complex_operators)
+    H_0 = random_matrix(N; rng, density, hermitian, complex=complex_operators)
     push!(hamiltonian, H_0)
     for control ∈ controls
-        H_c = random_matrix(N; density, hermitian, complex=complex_operators)
+        H_c = random_matrix(N; rng, density, hermitian, complex=complex_operators)
         push!(hamiltonian, (H_c, control))
     end
 
     objectives = [
         Objective(;
-            initial_state=random_state_vector(N),
+            initial_state=random_state_vector(N; rng),
             generator=tuple(hamiltonian...),
-            target_state=random_state_vector(N)
+            target_state=random_state_vector(N; rng)
         ) for k = 1:n_objectives
     ]
 

@@ -8,21 +8,26 @@ DocMeta.setdocmeta!(
     recursive=true
 )
 
+PROJECT_TOML = Pkg.TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))
+VERSION = PROJECT_TOML["version"]
+NAME = PROJECT_TOML["name"]
+AUTHORS = join(PROJECT_TOML["authors"], ", ") * " and contributors"
+GITHUB = "https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl"
+
+println("Starting makedocs")
+
 makedocs(;
-    modules=[QuantumControlTestUtils],
-    authors="Michael Goerz <mail@michaelgoerz.net",
-    repo="https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl/blob/{commit}{path}#{line}",
+    authors=AUTHORS,
     sitename="QuantumControlTestUtils.jl",
     format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
+        prettyurls=true,
         canonical="https://JuliaQuantumControl.github.io/QuantumControlTestUtils.jl",
-        edit_link="master",
-        assets=String[]
+        assets=String[],
+        footer="[$NAME.jl]($GITHUB) v$VERSION docs powered by [Documenter.jl](https://github.com/JuliaDocs/Documenter.jl)."
     ),
     pages=["Home" => "index.md",]
 )
 
-deploydocs(;
-    repo="github.com/JuliaQuantumControl/QuantumControlTestUtils.jl",
-    devbranch="master"
-)
+println("Finished makedocs")
+
+deploydocs(; repo="github.com/JuliaQuantumControl/QuantumControlTestUtils.jl")
