@@ -18,7 +18,8 @@ using ..RandomObjects: random_matrix, random_state_vector
 ```julia
 problem = dummy_control_problem(;
     N=10, n_objectives=1, n_controls=1, n_steps=50, dt=1.0, density=0.5,
-    complex_operators=true, hermitian=true, rng, kwargs...)
+    complex_operators=true, hermitian=true, pulses_as_controls=false, rng,
+    kwargs...)
 ```
 
 Sets up a control problem with random (sparse) Hermitian matrices.
@@ -39,6 +40,9 @@ Sets up a control problem with random (sparse) Hermitian matrices.
   complex-valued or real-valued.
 * `hermitian`: Whether or not all drift/control operators will be Hermitian
   matrices.
+* `pulses_as_controls=false`: If true, directly use pulses (discretized to the
+  midpoints of the time grid) as controls, instead of the normal controls
+  discretized to the points of the time grid.
 * `rng=Random.GLOBAL_RNG`: The random number generator to use.  See
   [`random_matrix`](@ref) and [`random_state_vector`](@ref).
 * `kwargs`: All other keyword arguments are passed on to
@@ -53,6 +57,7 @@ function dummy_control_problem(;
     density=0.5,
     complex_operators=true,
     hermitian=true,
+    pulses_as_controls=false,
     rng=Random.GLOBAL_RNG,
     kwargs...
 )
@@ -63,7 +68,11 @@ function dummy_control_problem(;
         # we normalize on the *intervals*, not on the time grid points
         pulses[l] ./= norm(pulses[l])
     end
-    controls = [discretize(pulse, tlist) for pulse in pulses]
+    if pulses_as_controls
+        controls = pulses
+    else
+        controls = [discretize(pulse, tlist) for pulse in pulses]
+    end
 
     hamiltonian = []
     H_0 = random_matrix(N; rng, density, hermitian, complex=complex_operators)
