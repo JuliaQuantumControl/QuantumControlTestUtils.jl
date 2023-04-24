@@ -27,6 +27,6 @@ The [QuantumControlTestUtils](https://github.com/JuliaQuantumControl/QuantumCont
 ## Reference
 
 ```@autodocs
-Modules = [QuantumControlTestUtils, QuantumControlTestUtils.RandomObjects, QuantumControlTestUtils.DummyOptimization]
+Modules = [QuantumControlTestUtils, QuantumControlTestUtils.RandomObjects, QuantumControlTestUtils.DummyOptimization, QuantumControlTestUtils.Interfaces]
 Private = false
 ```
