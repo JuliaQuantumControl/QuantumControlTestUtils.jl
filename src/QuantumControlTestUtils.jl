@@ -8,20 +8,6 @@ include("random.jl")  # submodule RandomObjects
 
 include("dummy_problem.jl")  # submodule DummyOptimization
 
-
-module Interfaces
-
-export check_operator, check_state
-include(joinpath("interfaces", "state.jl"))
-include(joinpath("interfaces", "operator.jl"))
-# TODO: amplitude interface
-# TODO: control interface
-# TODO: generator interface
-# TODO: propagator interface
-
-
-end
-
 include("logging.jl")
 
 end
