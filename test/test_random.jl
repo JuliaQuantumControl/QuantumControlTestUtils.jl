@@ -5,6 +5,7 @@ import SparseArrays
 
 using QuantumControl.Controls: evaluate
 using QuantumControl.Generators: Generator
+using QuantumControl.Interfaces: check_generator
 
 using QuantumControlTestUtils.RandomObjects
 # random_matrix, random_state_vector, random_dynamic_generator
@@ -368,6 +369,9 @@ end
     H = random_dynamic_generator(N, tlist)
     @test H isa Generator{Matrix{Float64},Vector{Float64}}
     @test length(H.ops) == 2
+
+    state = random_state_vector(N)
+    @test check_generator(H; state, tlist)
 
     rng = StableRNG(2316393754)
 
