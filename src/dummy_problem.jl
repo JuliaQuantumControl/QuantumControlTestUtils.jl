@@ -46,7 +46,7 @@ Sets up a control problem with random (sparse) Hermitian matrices.
 * `rng=Random.GLOBAL_RNG`: The random number generator to use.  See
   [`random_matrix`](@ref) and [`random_state_vector`](@ref).
 * `kwargs`: All other keyword arguments are passed on to
-  [`ControlProblem`](@ref)
+  `QuantumControl.ControlProblem`
 """
 function dummy_control_problem(;
     N=10,
