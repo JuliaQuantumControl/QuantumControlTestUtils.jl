@@ -6,7 +6,8 @@ DocMeta.setdocmeta!(
     QuantumControlTestUtils,
     :DocTestSetup,
     :(using QuantumControlTestUtils);
-    recursive=true
+    recursive=true,
+    warn=false,
 )
 
 PROJECT_TOML = Pkg.TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))

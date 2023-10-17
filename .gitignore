@@ -1,5 +1,7 @@
 *.jl.*.cov
 *.jl.cov
 *.jl.mem
+*.info
 Manifest.toml
 /docs/build/
+/coverage

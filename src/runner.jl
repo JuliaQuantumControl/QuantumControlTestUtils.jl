@@ -1,13 +1,14 @@
+# COV_EXCL_START
 using Printf
 using Logging
 using Coverage
+using PrettyTables: pretty_table, Highlighter
 using LocalCoverage:
     LocalCoverage,
     eval_coverage_metrics,
     PackageCoverage,
     FileCoverageSummary,
     CoverageTools
-using PrettyTables: Highlighter, pretty_table
 
 function _coverage(metric::Union{PackageCoverage,FileCoverageSummary})
     return 100.0 * (float(metric.lines_hit) / metric.lines_tracked)
@@ -23,10 +24,32 @@ function format_line(metric::Union{PackageCoverage,FileCoverageSummary})
 end
 
 
+"""Collect coverage information from all `.cov` and `.info` files recursively
+found in `root`. Return a Vector of `FileCoverage` objects filtered to files in
+`path` (relative to `root`).
+"""
+function collect_coverage(path="src"; root=pwd())
+    root = abspath(root)
+    path = joinpath(root, path)
+    local coverage
+    logger = Logging.SimpleLogger(stderr, Logging.Error)
+    Logging.with_logger(logger) do
+        coverage = merge_coverage_counts(
+            Coverage.process_folder(root),  # .cov files in root
+            Coverage.LCOV.readfolder(root),  # tracefile.info
+        )
+    end
+    coverage = filter(coverage) do covitem
+        startswith(abspath(covitem.filename), path)
+    end
+    return coverage
+end
+
+
 """Print out a coverage summary from existing coverage data.
 
 ```julia
-show_coverage(path="./src"; sort_by=nothing)
+show_coverage(path="./src"; root=pwd(), sort_by=nothing)
 ```
 
 prints a a table showing the tracked files in `path`, the total number of
@@ -34,17 +57,14 @@ tracked lines in that file ("Total"), the number of lines with coverage
 ("Hit"), the number of lines without coverage ("Missed") and the "Coverage" as
 a percentage.
 
-The coverage data is collected from `.cov` files in `path`.
+The coverage data is collected from `.cov` files in `path` as well as
+`tracefile-*.info` files in `root`.
 
 Optionally, the table can be sorted by passing the name of a column to
 `sort_by`, e..g. `sort_py=:Missed`.
 """
-function show_coverage(path::String=joinpath(pwd(), "src"); kwargs...)
-    local coverage
-    logger = Logging.SimpleLogger(stderr, Logging.Error)
-    Logging.with_logger(logger) do
-        coverage = Coverage.process_folder(path)
-    end
+function show_coverage(path="src"; root=pwd(), kwargs...)
+    coverage = collect_coverage(path; root=root)
     metrics = eval_coverage_metrics(coverage, path)
     show_coverage(metrics; kwargs...)
 end
@@ -100,29 +120,28 @@ _show_coverage_func = show_coverage
 """Generate an HTML report for existing coverage data.
 
 ```julia
-generate_coverage_html(path="./"; covdir="coverage", genhtml="genhtml")
+generate_coverage_html(path="src"; root=pwd(), covdir="coverage", genhtml="genhtml")
 ```
 
-creates a folder `covdir` and use the external `genhtml` program to write an
-HTML coverage report into that folder.
+creates a folder `covdir` in `root` and use the external `genhtml` program to
+write an HTML coverage report into that folder.
 """
-function generate_coverage_html(path::String=pwd(); kwargs...)
-    local coverage
-    logger = Logging.SimpleLogger(stderr, Logging.Error)
-    Logging.with_logger(logger) do
-        coverage = Coverage.process_folder(path)
-    end
-    generate_coverage_html(path, coverage; kwargs...)
+function generate_coverage_html(path="src"; root=pwd(), kwargs...)
+    coverage = collect_coverage(path; root=root)
+    generate_coverage_html(root, coverage; kwargs...)
 end
 
+
 function generate_coverage_html(
-    path::String,
+    root::String,
     coverage::Vector{LocalCoverage.CoverageTools.FileCoverage};
     covdir="coverage",
     genhtml="genhtml"
 )
-    covdir = joinpath(path, covdir)
-    tracefile = joinpath(path, "lcov.info")
+    root = abspath(normpath(root))
+    covdir = normpath(root, covdir)
+    mkpath(covdir)
+    tracefile = joinpath(covdir, "lcov.info")
     LocalCoverage.CoverageTools.LCOV.writefile(tracefile, coverage)
     branch = try
         strip(read(`git rev-parse --abbrev-ref HEAD`, String))
@@ -150,8 +169,8 @@ test(
     file="test/runtests.jl";
     root=pwd(),
     project="test",
-    code_coverage="user",
-    show_coverage=(code_coverage == "user"),
+    code_coverage=".coverage/tracefile-%p.info",
+    show_coverage=(code_coverage != "none"),
     color=<inherit>,
     compiled_modules=<inherit>,
     startup_file=<inherit>,
@@ -183,7 +202,7 @@ If `show_coverage` is passed as `true` (default), a coverage summary is shown.
 Further, if `genhtml` is `true`, a full HTML coverage report will be generated
 in `covdir` (relative to `root`). This requires the `genhtml` executable (part
 of the [lcov](http://ltp.sourceforge.net/coverage/lcov.php) package). Instead
-of `true`, it is also possible to pass the path to the `genhtml` exectuable.
+of `true`, it is also possible to pass the path to the `genhtml` executable.
 
 All other keyword arguments correspond to the respective command line flag for
 the `julia` executable that is run as the subprocess.
@@ -194,8 +213,8 @@ function test(
     file="test/runtests.jl";
     root=pwd(),
     project="test",
-    code_coverage="user",
-    show_coverage=(code_coverage == "user"),
+    code_coverage=joinpath(".coverage", "tracefile-%p.info"),
+    show_coverage=(code_coverage != "none"),
     color=(Base.have_color === nothing ? "auto" : Base.have_color ? "yes" : "no"),
     compiled_modules=(Bool(Base.JLOptions().use_compiled_modules) ? "yes" : "no"),
     startup_file=(Base.JLOptions().startupfile == 1 ? "yes" : "no"),
@@ -207,6 +226,14 @@ function test(
     genhtml::Union{Bool,AbstractString}=false,
     covdir="coverage"
 )
+    root = abspath(normpath(root))
+    if !(startswith(code_coverage, "@") || code_coverage in ["none", "user", "all"])
+        code_coverage = normpath(root, code_coverage)
+        if !endswith(code_coverage, ".info")
+            @error "`code_coverage` must have `.info` extension" code_coverage
+        end
+        mkpath(dirname(code_coverage))
+    end
     julia = Base.julia_cmd().exec[1]
     cmd = [
         julia,
@@ -228,12 +255,18 @@ function test(
     if show_coverage || genhtml
         logger = Logging.SimpleLogger(stderr, Logging.Error)
         local coverage
-        package_dir = joinpath(root, "src")
+        src_dir = abspath(joinpath(root, "src"))
         Logging.with_logger(logger) do
-            coverage = Coverage.process_folder(package_dir)
+            coverage = merge_coverage_counts(
+                Coverage.process_folder(src_dir),  # .cov files in path
+                Coverage.LCOV.readfolder(root),  # tracefile.info (recursively)
+            )
+        end
+        coverage = filter(coverage) do covitem
+            startswith(abspath(covitem.filename), src_dir)
         end
         if show_coverage
-            metrics = eval_coverage_metrics(coverage, package_dir)
+            metrics = eval_coverage_metrics(coverage, src_dir)
             _show_coverage_func(metrics)
         end
         (genhtml === true) && (genhtml = "genhtml")
@@ -243,3 +276,4 @@ function test(
         end
     end
 end
+# COV_EXCL_STOP

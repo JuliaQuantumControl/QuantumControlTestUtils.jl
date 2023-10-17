@@ -1,7 +1,3 @@
-```@meta
-CurrentModule = QuantumControlTestUtils
-```
-
 # QuantumControlTestUtils
 
 ```@eval
@@ -18,13 +14,6 @@ Markdown.parse("$github_badge $version_badge")
 ```
 
 The [QuantumControlTestUtils](https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl) package collects methods that are used for testing and benchmarking within the [JuliaQuantumControl](https://github.com/JuliaQuantumControl) organization
-
-## Exported Functions
-
-```@index
-```
-
-## Reference
 
 ```@autodocs
 Modules = [QuantumControlTestUtils, QuantumControlTestUtils.RandomObjects, QuantumControlTestUtils.DummyOptimization]
