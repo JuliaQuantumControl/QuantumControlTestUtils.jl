@@ -58,6 +58,7 @@ function dummy_control_problem(;
     complex_operators=true,
     hermitian=true,
     pulses_as_controls=false,
+    prop_method=:cheby,
     rng=Random.GLOBAL_RNG,
     kwargs...
 )
@@ -96,7 +97,8 @@ function dummy_control_problem(;
             control => Dict(:lambda_a => 1.0, :update_shape => t -> 1.0) for
             control in controls
         ),
-        tlist=tlist,
+        prop_method,
+        tlist,
         kwargs...
     )
 end
