@@ -145,7 +145,7 @@ larger `N`, the more tightly the envelope will fit.
 * `spectral_envelope=1.0`: An upper bound for the spectral radius for the
   generator evaluated at different points in time. For large `N`, the spectral
   envelope should be approximately touched for the extremal pulse amplitudes,
-  ±1. Note that the *average* spectral radius is always well withing the
+  ±1. Note that the *average* spectral radius is always well within the
   spectral_envelope`)
 * `exact_spectral_envelope=false`: If true, the spectral radius when plugging
   in the extremal pulse amplitudes ±1 will touch exactly the specified

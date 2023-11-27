@@ -14,7 +14,7 @@ N = 100
 
 relerr(a, b) = abs(a - b) / max(abs(a), abs(b))
 
-# How close do eigenvalues have to be to spectral radius? The larer N, the
+# How close do eigenvalues have to be to spectral radius? The larger N, the
 # smaller rtol can be
 ≊(a, b) = isapprox(a, b; rtol=0.1)  # for larger N, rtol could be smaller
 
