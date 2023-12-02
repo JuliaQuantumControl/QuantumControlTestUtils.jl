@@ -151,6 +151,9 @@ larger `N`, the more tightly the envelope will fit.
   in the extremal pulse amplitudes ±1 will touch exactly the specified
   `spectral_envelope`. This is done via diagonalization, so it is only
   feasible for moderately large dimensions `N`.
+* `amplitudes`: If given, a vector of amplitudes to use in the generator. Must
+   be of length `number_of_controls`. This can be used to supersede the
+   creation of random control pulses.
 * `rng=Random.GLOBAL_RNG`: The random number generator to use. The call
   `Random.rand(rng, N, N)` must produces a real-valued ``N×N`` matrix with
   elements uniformly distributed between 0 and 1
@@ -168,6 +171,7 @@ function random_dynamic_generator(
     hermitian=true,
     spectral_envelope=1.0,
     exact_spectral_envelope=false,
+    amplitudes=nothing,
     rng=Random.GLOBAL_RNG
 )
     ρ = spectral_envelope / sqrt(number_of_controls + 1)
@@ -177,13 +181,15 @@ function random_dynamic_generator(
     # close orthogonal)
     H₀ = random_matrix(N; density, complex, hermitian, spectral_radius=ρ, rng)
     ops = [H₀]
-    amplitudes = Vector{Float64}[]
-    for l = 1:number_of_controls
-        ϵ::Vector{Float64} = 2 .* (rand(rng, length(tlist) - 1) .- 0.5)
-        ϵ .= ϵ ./ maximum(ϵ)
-        push!(amplitudes, ϵ)
-        Hₗ = random_matrix(N; density, complex, hermitian, spectral_radius=ρ, rng)
-        push!(ops, Hₗ)
+    if isnothing(amplitudes)
+        amplitudes = Vector{Float64}[]
+        for l = 1:number_of_controls
+            ϵ::Vector{Float64} = 2 .* (rand(rng, length(tlist) - 1) .- 0.5)
+            ϵ .= ϵ ./ maximum(ϵ)
+            push!(amplitudes, ϵ)
+            Hₗ = random_matrix(N; density, complex, hermitian, spectral_radius=ρ, rng)
+            push!(ops, Hₗ)
+        end
     end
     if exact_spectral_envelope
         H_pos = H₀
