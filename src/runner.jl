@@ -26,11 +26,10 @@ end
 
 """Collect coverage information from all `.cov` and `.info` files recursively
 found in `root`. Return a Vector of `FileCoverage` objects filtered to files in
-`path` (relative to `root`).
+`paths` (relative to `root`).
 """
-function collect_coverage(path="src"; root=pwd())
+function collect_coverage(paths::Vector{String}=["src", "ext"]; root=pwd())
     root = abspath(root)
-    path = joinpath(root, path)
     local coverage
     logger = Logging.SimpleLogger(stderr, Logging.Error)
     Logging.with_logger(logger) do
@@ -40,7 +39,7 @@ function collect_coverage(path="src"; root=pwd())
         )
     end
     coverage = filter(coverage) do covitem
-        startswith(abspath(covitem.filename), path)
+        any(startswith(abspath(covitem.filename), joinpath(root, path)) for path in paths)
     end
     return coverage
 end
@@ -49,23 +48,23 @@ end
 """Print out a coverage summary from existing coverage data.
 
 ```julia
-show_coverage(path="./src"; root=pwd(), sort_by=nothing)
+show_coverage(paths=["./src", "./ext"]; root=pwd(), sort_by=nothing)
 ```
 
-prints a a table showing the tracked files in `path`, the total number of
+prints a a table showing the tracked files in `paths`, the total number of
 tracked lines in that file ("Total"), the number of lines with coverage
 ("Hit"), the number of lines without coverage ("Missed") and the "Coverage" as
 a percentage.
 
-The coverage data is collected from `.cov` files in `path` as well as
+The coverage data is collected from `.cov` files in `paths` as well as
 `tracefile-*.info` files in `root`.
 
 Optionally, the table can be sorted by passing the name of a column to
 `sort_by`, e..g. `sort_py=:Missed`.
 """
-function show_coverage(path="src"; root=pwd(), kwargs...)
-    coverage = collect_coverage(path; root=root)
-    metrics = eval_coverage_metrics(coverage, path)
+function show_coverage(paths=["src", "ext"]; root=pwd(), kwargs...)
+    coverage = collect_coverage(paths; root=root)
+    metrics = eval_coverage_metrics(coverage, root)
     show_coverage(metrics; kwargs...)
 end
 
@@ -120,14 +119,16 @@ _show_coverage_func = show_coverage
 """Generate an HTML report for existing coverage data.
 
 ```julia
-generate_coverage_html(path="src"; root=pwd(), covdir="coverage", genhtml="genhtml")
+generate_coverage_html(
+    paths=["src", "ext"]; root=pwd(), covdir="coverage", genhtml="genhtml"
+)
 ```
 
 creates a folder `covdir` in `root` and use the external `genhtml` program to
 write an HTML coverage report into that folder.
 """
-function generate_coverage_html(path="src"; root=pwd(), kwargs...)
-    coverage = collect_coverage(path; root=root)
+function generate_coverage_html(paths=["src", "ext"]; root=pwd(), kwargs...)
+    coverage = collect_coverage(paths; root=root)
     generate_coverage_html(root, coverage; kwargs...)
 end
 
@@ -254,19 +255,9 @@ function test(
     run(Cmd(Cmd(cmd), dir=root))
     if show_coverage || genhtml
         logger = Logging.SimpleLogger(stderr, Logging.Error)
-        local coverage
-        src_dir = abspath(joinpath(root, "src"))
-        Logging.with_logger(logger) do
-            coverage = merge_coverage_counts(
-                Coverage.process_folder(src_dir),  # .cov files in path
-                Coverage.LCOV.readfolder(root),  # tracefile.info (recursively)
-            )
-        end
-        coverage = filter(coverage) do covitem
-            startswith(abspath(covitem.filename), src_dir)
-        end
+        coverage = collect_coverage(; root=root)
         if show_coverage
-            metrics = eval_coverage_metrics(coverage, src_dir)
+            metrics = eval_coverage_metrics(coverage, root)
             _show_coverage_func(metrics)
         end
         (genhtml === true) && (genhtml = "genhtml")
