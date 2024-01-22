@@ -7,7 +7,7 @@ using Printf
 using LinearAlgebra
 
 using QuantumControl.Controls: get_controls, discretize, discretize_on_midpoints
-using QuantumControl: Objective, ControlProblem
+using QuantumControl: Trajectory, ControlProblem
 import QuantumControl
 
 using ..RandomObjects: random_matrix, random_state_vector
@@ -17,7 +17,7 @@ using ..RandomObjects: random_matrix, random_state_vector
 
 ```julia
 problem = dummy_control_problem(;
-    N=10, n_objectives=1, n_controls=1, n_steps=50, dt=1.0, density=0.5,
+    N=10, n_trajectories=1, n_controls=1, n_steps=50, dt=1.0, density=0.5,
     complex_operators=true, hermitian=true, pulses_as_controls=false, rng,
     kwargs...)
 ```
@@ -27,8 +27,9 @@ Sets up a control problem with random (sparse) Hermitian matrices.
 # Arguments
 
 * `N`: The dimension of the Hilbert space
-* `n_objectives`: The number of objectives in the optimization. All objectives
-  will have the same Hamiltonian, but random initial and target states.
+* `n_trajectories`: The number of trajectories in the optimization. All
+  trajectories will have the same Hamiltonian, but random initial and target
+  states.
 * `n_controls`: The number of controls, that is, the number of control terms in
   the control Hamiltonian. Each control is an array of random values,
   normalized on the intervals of the time grid.
@@ -50,7 +51,7 @@ Sets up a control problem with random (sparse) Hermitian matrices.
 """
 function dummy_control_problem(;
     N=10,
-    n_objectives=1,
+    n_trajectories=1,
     n_controls=1,
     n_steps=50,
     dt=1.0,
@@ -83,22 +84,22 @@ function dummy_control_problem(;
         push!(hamiltonian, (H_c, control))
     end
 
-    objectives = [
-        Objective(;
-            initial_state=random_state_vector(N; rng),
-            generator=tuple(hamiltonian...),
+    trajectories = [
+        Trajectory(
+            random_state_vector(N; rng),
+            tuple(hamiltonian...);
             target_state=random_state_vector(N; rng)
-        ) for k = 1:n_objectives
+        ) for k = 1:n_trajectories
     ]
 
-    return ControlProblem(;
-        objectives=objectives,
+    return ControlProblem(
+        trajectories,
+        tlist;
         pulse_options=Dict(
             control => Dict(:lambda_a => 1.0, :update_shape => t -> 1.0) for
             control in controls
         ),
         prop_method,
-        tlist,
         kwargs...
     )
 end
@@ -119,7 +120,7 @@ mutable struct DummyOptimizationResult
 
     function DummyOptimizationResult(problem)
         tlist = problem.tlist
-        controls = get_controls(problem.objectives)
+        controls = get_controls(problem.trajectories)
         iter_start = get(problem.kwargs, :iter_start, 0)
         iter = iter_start
         iter_stop = get(problem.kwargs, :iter_stop, 20)
@@ -146,8 +147,8 @@ mutable struct DummyOptimizationResult
 end
 
 struct DummyOptimizationWrk
-    objectives
-    adjoint_objectives
+    trajectories
+    adjoint_trajectories
     kwargs
     controls
     pulses0::Vector{Vector{Float64}}
@@ -157,9 +158,9 @@ end
 
 
 function DummyOptimizationWrk(problem)
-    objectives = [obj for obj in problem.objectives]
-    adjoint_objectives = [adjoint(obj) for obj in problem.objectives]
-    controls = get_controls(objectives)
+    trajectories = [traj for traj in problem.trajectories]
+    adjoint_trajectories = [adjoint(traj) for traj in problem.trajectories]
+    controls = get_controls(trajectories)
     kwargs = Dict(problem.kwargs)
     tlist = problem.tlist
     if haskey(kwargs, :continue_from)
@@ -180,8 +181,8 @@ function DummyOptimizationWrk(problem)
     end
     pulses1 = [copy(pulse) for pulse in pulses0]
     return DummyOptimizationWrk(
-        objectives,
-        adjoint_objectives,
+        trajectories,
+        adjoint_trajectories,
         kwargs,
         controls,
         pulses0,
