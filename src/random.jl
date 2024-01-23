@@ -4,7 +4,7 @@ using Random
 using LinearAlgebra
 using SparseArrays
 
-using QuantumControl.Generators: Generator
+using QuantumControlBase.QuantumPropagators.Generators: Generator
 
 export random_state_vector, random_matrix, random_dynamic_generator
 
