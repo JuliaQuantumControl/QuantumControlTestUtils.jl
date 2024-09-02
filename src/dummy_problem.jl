@@ -6,10 +6,10 @@ using Random
 using Printf
 using LinearAlgebra
 
-using QuantumControlBase.QuantumPropagators.Controls:
+using QuantumControl.QuantumPropagators.Controls:
     get_controls, discretize, discretize_on_midpoints
-using QuantumControlBase: Trajectory, ControlProblem
-import QuantumControlBase
+using QuantumControl: Trajectory, ControlProblem
+import QuantumControl
 
 using ..RandomObjects: random_matrix, random_state_vector
 
@@ -243,7 +243,7 @@ function optimize_with_dummy_method(problem)
 end
 
 
-QuantumControlBase.optimize(problem, method::Val{:dummymethod}) =
+QuantumControl.optimize(problem, method::Val{:dummymethod}) =
     optimize_with_dummy_method(problem)
 
 
