@@ -1,7 +1,7 @@
 name = "QuantumControlTestUtils"
 uuid = "d3fd27c9-1dfb-4e67-b0c0-90d0d87a1e48"
 authors = ["Michael Goerz <mail@michaelgoerz.net"]
-version = "0.3.0+dev"
+version = "0.3.1"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
@@ -23,7 +23,7 @@ LocalCoverage = "0.6"
 Logging = "1"
 PrettyTables = "0.12, 1.0, 2"
 Printf = "1"
-QuantumControl = ">=0.10.0"
+QuantumControl = "0.11.0"
 Random = "1"
 SparseArrays = "1"
 julia = "1.9"
