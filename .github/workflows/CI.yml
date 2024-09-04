@@ -3,17 +3,13 @@ on:
   push:
     branches:
       - master
+      - dev
       - 'release-*'
     tags:
       - '*'
   pull_request:
     branches:
       - master
-concurrency:
-  # Skip intermediate builds: always.
-  # Cancel intermediate builds: only if it is a pull request build.
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 env:
   GKSwstype: 100
   JULIA_PKG_PRECOMPILE_AUTO: false
@@ -30,12 +26,12 @@ jobs:
             version: '1'
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
-      - uses: julia-actions/cache@v1
-      - run: |
-          # Instantiate Pkg
+      - uses: julia-actions/cache@v2
+      - name: "Instantiate test environment"
+        run: |
           wget https://raw.githubusercontent.com/JuliaQuantumControl/JuliaQuantumControl/master/scripts/installorg.jl
           julia --project=test installorg.jl
       - name: "Run tests"
@@ -45,16 +41,14 @@ jobs:
   docs:
     name: Documentation
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1'
+      - uses: julia-actions/cache@v2
       - name: "Instantiate test environment"
         run: |
-          # Instantiate Pkg
           wget https://raw.githubusercontent.com/JuliaQuantumControl/JuliaQuantumControl/master/scripts/installorg.jl
           julia --project=test installorg.jl
       - name: "Build documentation"
@@ -67,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1'
       - name: Get codestyle settings
