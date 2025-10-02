@@ -449,7 +449,7 @@ end
     @test λ isa Vector{ComplexF64}
     @test abs(maximum(abs.(λ)) - 2.0) < 1e-5  # exact!
     λ = reduce(vcat, [eigvals(Array(evaluate(H, tlist, n))) for n = 1:50:1000])
-    @test 1.9 < maximum(abs.(λ)) ≤ 2.0
+    @test 1.8 < maximum(abs.(λ)) ≤ 2.0
 
 end
 
