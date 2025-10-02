@@ -290,7 +290,7 @@ function random_hermitian_real_matrix(
     exact_spectral_radius=false
 )
     Δ = √(12 / N)
-    X = Δ * (rand(N, N) .- 0.5)
+    X = Δ * (rand(rng, N, N) .- 0.5)
     H = ρ * (X + X') / (2 * √2)
     if exact_spectral_radius
         λ = eigvals(H)
