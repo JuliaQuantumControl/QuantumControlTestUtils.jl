@@ -66,7 +66,7 @@ function dummy_control_problem(;
 )
 
     tlist = collect(range(0; length=(n_steps + 1), step=dt))
-    pulses = [rand(length(tlist) - 1) for l = 1:n_controls]
+    pulses = [rand(rng, length(tlist) - 1) for l = 1:n_controls]
     for l = 1:n_controls
         # we normalize on the *intervals*, not on the time grid points
         pulses[l] ./= norm(pulses[l])
