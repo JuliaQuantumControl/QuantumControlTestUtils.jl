@@ -25,15 +25,15 @@ jobs:
             os: ubuntu-latest
             version: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       - name: "Instantiate test environment"
         run: |
           wget https://raw.githubusercontent.com/JuliaQuantumControl/JuliaQuantumControl/master/scripts/installorg.jl
-          julia --project=test installorg.jl
+          julia --project=test installorg.jl --no-precompile
       - name: "Run tests"
         shell: julia --color=yes --project=test --code-coverage="@" --depwarn="yes" --check-bounds="yes" {0}
         run: |
@@ -42,15 +42,15 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       - name: "Instantiate test environment"
         run: |
           wget https://raw.githubusercontent.com/JuliaQuantumControl/JuliaQuantumControl/master/scripts/installorg.jl
-          julia --project=test installorg.jl
+          julia --project=test installorg.jl --no-precompile
       - name: "Build documentation"
         run: julia --project=test docs/make.jl
         env:
@@ -60,18 +60,48 @@ jobs:
     name: Codestyle
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
+      - name: Get typos settings
+        run: wget https://raw.githubusercontent.com/JuliaQuantumControl/JuliaQuantumControl/master/typos.toml
+      - name: Spell Check
+        uses: crate-ci/typos@master
+      - name: Version Check
+        shell: julia {0}
+        run: |
+          using Pkg
+          VERSION = VersionNumber(Pkg.TOML.parsefile("Project.toml")["version"])
+          BRANCH = ENV["GITHUB_REF_NAME"]
+          if ENV["GITHUB_EVENT_NAME"] == "pull_request"
+              # For pull_request events, return the head (aka., "from") branch,
+              # not the base (aka., "to") branch.
+              BRANCH = ENV["GITHUB_HEAD_REF"]
+          end
+          if startswith(BRANCH, "release-")
+              if (length(VERSION.prerelease) == length(VERSION.build))
+                  println("Version $VERSION on release branch OK")
+              else
+                  @error "Invalid version $VERSION on release branch"
+                  exit(1)
+              end
+          elseif (ENV["GITHUB_REF_TYPE"] == "branch") && (BRANCH != "master")
+              if ("dev" in VERSION.prerelease) || ("dev" in VERSION.build)
+                  println("Version $VERSION OK with dev-suffix on $BRANCH")
+              else
+                  @error "Invalid version $VERSION on branch $BRANCH: must contain dev suffix"
+                  exit(1)
+              end
+          else
+              println("Version $VERSION OK on $BRANCH")
+          end
+          exit(0)
       - name: Get codestyle settings
         run: wget https://raw.githubusercontent.com/JuliaQuantumControl/JuliaQuantumControl/master/.JuliaFormatter.toml
       - name: Install JuliaFormatter and format
-        # This will use the latest version by default but you can set the version like so:
-        #
-        # julia  -e 'using Pkg; Pkg.add(PackageSpec(name="JuliaFormatter", version="0.13.0"))'
         run: |
-          julia  -e 'using Pkg; Pkg.add(PackageSpec(name="JuliaFormatter"))'
+          julia  -e 'using Pkg; Pkg.add(PackageSpec(name="JuliaFormatter", version="2.3.0"))'
           julia  -e 'using JuliaFormatter; format(".", verbose=true)'
       - name: Format Check
         shell: julia {0}
