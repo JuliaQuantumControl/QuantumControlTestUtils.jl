@@ -6,8 +6,8 @@ DocMeta.setdocmeta!(
     QuantumControlTestUtils,
     :DocTestSetup,
     :(using QuantumControlTestUtils);
-    recursive=true,
-    warn=false,
+    recursive = true,
+    warn = false,
 )
 
 PROJECT_TOML = Pkg.TOML.parsefile(joinpath(@__DIR__, "..", "Project.toml"))
@@ -19,17 +19,17 @@ GITHUB = "https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl"
 println("Starting makedocs")
 
 makedocs(;
-    authors=AUTHORS,
-    sitename="QuantumControlTestUtils.jl",
-    format=Documenter.HTML(;
-        prettyurls=true,
-        canonical="https://JuliaQuantumControl.github.io/QuantumControlTestUtils.jl",
-        assets=String[],
-        footer="[$NAME.jl]($GITHUB) v$VERSION docs powered by [Documenter.jl](https://github.com/JuliaDocs/Documenter.jl)."
+    authors = AUTHORS,
+    sitename = "QuantumControlTestUtils.jl",
+    format = Documenter.HTML(;
+        prettyurls = true,
+        canonical = "https://JuliaQuantumControl.github.io/QuantumControlTestUtils.jl",
+        assets = String[],
+        footer = "[$NAME.jl]($GITHUB) v$VERSION docs powered by [Documenter.jl](https://github.com/JuliaDocs/Documenter.jl)."
     ),
-    pages=["Home" => "index.md",]
+    pages = ["Home" => "index.md",]
 )
 
 println("Finished makedocs")
 
-deploydocs(; repo="github.com/JuliaQuantumControl/QuantumControlTestUtils.jl")
+deploydocs(; repo = "github.com/JuliaQuantumControl/QuantumControlTestUtils.jl")

@@ -51,21 +51,21 @@ Sets up a control problem with random (sparse) Hermitian matrices.
   `QuantumControl.ControlProblem`
 """
 function dummy_control_problem(;
-    N=10,
-    n_trajectories=1,
-    n_controls=1,
-    n_steps=50,
-    dt=1.0,
-    density=0.5,
-    complex_operators=true,
-    hermitian=true,
-    pulses_as_controls=false,
-    prop_method=:cheby,
-    rng=Random.GLOBAL_RNG,
+    N = 10,
+    n_trajectories = 1,
+    n_controls = 1,
+    n_steps = 50,
+    dt = 1.0,
+    density = 0.5,
+    complex_operators = true,
+    hermitian = true,
+    pulses_as_controls = false,
+    prop_method = :cheby,
+    rng = Random.GLOBAL_RNG,
     kwargs...
 )
 
-    tlist = collect(range(0; length=(n_steps + 1), step=dt))
+    tlist = collect(range(0; length = (n_steps + 1), step = dt))
     pulses = [rand(rng, length(tlist) - 1) for l = 1:n_controls]
     for l = 1:n_controls
         # we normalize on the *intervals*, not on the time grid points
@@ -78,10 +78,10 @@ function dummy_control_problem(;
     end
 
     hamiltonian = []
-    H_0 = random_matrix(N; rng, density, hermitian, complex=complex_operators)
+    H_0 = random_matrix(N; rng, density, hermitian, complex = complex_operators)
     push!(hamiltonian, H_0)
     for control ∈ controls
-        H_c = random_matrix(N; rng, density, hermitian, complex=complex_operators)
+        H_c = random_matrix(N; rng, density, hermitian, complex = complex_operators)
         push!(hamiltonian, (H_c, control))
     end
 
@@ -89,14 +89,14 @@ function dummy_control_problem(;
         Trajectory(
             random_state_vector(N; rng),
             tuple(hamiltonian...);
-            target_state=random_state_vector(N; rng)
+            target_state = random_state_vector(N; rng)
         ) for k = 1:n_trajectories
     ]
 
     return ControlProblem(
         trajectories,
         tlist;
-        pulse_options=Dict(
+        pulse_options = Dict(
             control => Dict(:lambda_a => 1.0, :update_shape => t -> 1.0) for
             control in controls
         ),

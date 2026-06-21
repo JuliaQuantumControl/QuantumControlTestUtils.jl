@@ -51,12 +51,12 @@ Hamiltonian.
 """
 function random_matrix(
     N;
-    density=1.0,
-    complex=true,
-    hermitian=false,
-    spectral_radius=1.0,
-    exact_spectral_radius=false,
-    rng=Random.GLOBAL_RNG
+    density = 1.0,
+    complex = true,
+    hermitian = false,
+    spectral_radius = 1.0,
+    exact_spectral_radius = false,
+    rng = Random.GLOBAL_RNG
 )
     if (density ≤ 0.0) || (density > 1.0)
         error("density must be in (0, 1]")
@@ -165,21 +165,21 @@ larger `N`, the more tightly the envelope will fit.
 function random_dynamic_generator(
     N,
     tlist;
-    number_of_controls=1,
-    density=1.0,
-    complex=false,
-    hermitian=true,
-    spectral_envelope=1.0,
-    exact_spectral_envelope=false,
-    amplitudes=nothing,
-    rng=Random.GLOBAL_RNG
+    number_of_controls = 1,
+    density = 1.0,
+    complex = false,
+    hermitian = true,
+    spectral_envelope = 1.0,
+    exact_spectral_envelope = false,
+    amplitudes = nothing,
+    rng = Random.GLOBAL_RNG
 )
     ρ = spectral_envelope / sqrt(number_of_controls + 1)
     # ρ is an adjusted spectral radius, under the assumption that if you sum N
     # (large) random matrices with spectral radius 1.0, the result should have
     # spectral radius close to √N (since large random matrices are likely to be
     # close orthogonal)
-    H₀ = random_matrix(N; density, complex, hermitian, spectral_radius=ρ, rng)
+    H₀ = random_matrix(N; density, complex, hermitian, spectral_radius = ρ, rng)
     ops = [H₀]
     if isnothing(amplitudes)
         amplitudes = Vector{Float64}[]
@@ -187,7 +187,7 @@ function random_dynamic_generator(
             ϵ::Vector{Float64} = 2 .* (rand(rng, length(tlist) - 1) .- 0.5)
             ϵ .= ϵ ./ maximum(ϵ)
             push!(amplitudes, ϵ)
-            Hₗ = random_matrix(N; density, complex, hermitian, spectral_radius=ρ, rng)
+            Hₗ = random_matrix(N; density, complex, hermitian, spectral_radius = ρ, rng)
             push!(ops, Hₗ)
         end
     end
@@ -218,7 +218,7 @@ end
 random_complex_matrix(N, ρ)
 ```
 """
-function random_complex_matrix(N, ρ; rng=Random.GLOBAL_RNG, exact_spectral_radius=false)
+function random_complex_matrix(N, ρ; rng = Random.GLOBAL_RNG, exact_spectral_radius = false)
     Δ = √(12 / N)
     X = Δ * (rand(rng, N, N) .- 0.5)
     Y = Δ * (rand(rng, N, N) .- 0.5)
@@ -239,7 +239,7 @@ end
 random_real_matrix(N, ρ)
 ```
 """
-function random_real_matrix(N, ρ; rng=Random.GLOBAL_RNG, exact_spectral_radius=false)
+function random_real_matrix(N, ρ; rng = Random.GLOBAL_RNG, exact_spectral_radius = false)
     Δ = √(12 / N)
     X = Δ * (rand(rng, N, N) .- 0.5)
     H = ρ * X
@@ -259,7 +259,12 @@ end
 random_hermitian_matrix(N, ρ)
 ```
 """
-function random_hermitian_matrix(N, ρ; rng=Random.GLOBAL_RNG, exact_spectral_radius=false)
+function random_hermitian_matrix(
+    N,
+    ρ;
+    rng = Random.GLOBAL_RNG,
+    exact_spectral_radius = false
+)
     Δ = √(12 / N)
     X = Δ * (rand(rng, N, N) .- 0.5)
     Y = Δ * (rand(rng, N, N) .- 0.5)
@@ -286,8 +291,8 @@ random_hermitian_real_matrix(N, ρ)
 function random_hermitian_real_matrix(
     N,
     ρ;
-    rng=Random.GLOBAL_RNG,
-    exact_spectral_radius=false
+    rng = Random.GLOBAL_RNG,
+    exact_spectral_radius = false
 )
     Δ = √(12 / N)
     X = Δ * (rand(rng, N, N) .- 0.5)
@@ -318,8 +323,8 @@ function random_complex_sparse_matrix(
     N,
     ρ,
     density;
-    rng=Random.GLOBAL_RNG,
-    exact_spectral_radius=false
+    rng = Random.GLOBAL_RNG,
+    exact_spectral_radius = false
 )
     p = 1 - √(1 - density)
     Δ = √(12 / (p * N))
@@ -352,8 +357,8 @@ function random_real_sparse_matrix(
     N,
     ρ,
     density;
-    rng=Random.GLOBAL_RNG,
-    exact_spectral_radius=false
+    rng = Random.GLOBAL_RNG,
+    exact_spectral_radius = false
 )
     p = density
     Δ = √(12 / (p * N))
@@ -384,8 +389,8 @@ function random_hermitian_sparse_matrix(
     N,
     ρ,
     density;
-    rng=Random.GLOBAL_RNG,
-    exact_spectral_radius=false
+    rng = Random.GLOBAL_RNG,
+    exact_spectral_radius = false
 )
     p = 1 - √(1 - density)
     Δ = √(12 / (p * N))
@@ -421,8 +426,8 @@ function random_hermitian_sparse_real_matrix(
     N,
     ρ,
     density;
-    rng=Random.GLOBAL_RNG,
-    exact_spectral_radius=false
+    rng = Random.GLOBAL_RNG,
+    exact_spectral_radius = false
 )
     p = 1 - √(1 - density)
     Δ = √(12 / (p * N))
@@ -447,7 +452,7 @@ end
 random_state_vector(N; rng=GLOBAL_RNG)
 ```
 """
-function random_state_vector(N; rng=Random.GLOBAL_RNG)
+function random_state_vector(N; rng = Random.GLOBAL_RNG)
     Ψ = rand(rng, N) .* exp.((2π * im) .* rand(rng, N))
     Ψ ./= norm(Ψ)
     return Ψ

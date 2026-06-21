@@ -7,8 +7,8 @@ using QuantumControlTestUtils
         QuantumControlTestUtils,
         :DocTestSetup,
         :(using QuantumControlTestUtils);
-        recursive=true,
-        warn=false
+        recursive = true,
+        warn = false
     )
     doctest(QuantumControlTestUtils)
 end

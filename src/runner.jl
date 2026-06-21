@@ -28,7 +28,7 @@ end
 found in `root`. Return a Vector of `FileCoverage` objects filtered to files in
 `paths` (relative to `root`).
 """
-function collect_coverage(paths::Vector{String}=["src", "ext"]; root=pwd())
+function collect_coverage(paths::Vector{String} = ["src", "ext"]; root = pwd())
     root = abspath(root)
     local coverage
     logger = Logging.SimpleLogger(stderr, Logging.Error)
@@ -62,13 +62,13 @@ The coverage data is collected from `.cov` files in `paths` as well as
 Optionally, the table can be sorted by passing the name of a column to
 `sort_by`, e..g. `sort_py=:Missed`.
 """
-function show_coverage(paths=["src", "ext"]; root=pwd(), kwargs...)
-    coverage = collect_coverage(paths; root=root)
+function show_coverage(paths = ["src", "ext"]; root = pwd(), kwargs...)
+    coverage = collect_coverage(paths; root = root)
     metrics = eval_coverage_metrics(coverage, root)
     show_coverage(metrics; kwargs...)
 end
 
-function show_coverage(metrics::PackageCoverage; sort_by=nothing)
+function show_coverage(metrics::PackageCoverage; sort_by = nothing)
 
     file_metrics = metrics.files
     sorter = Dict(
@@ -79,7 +79,7 @@ function show_coverage(metrics::PackageCoverage; sort_by=nothing)
     )
     if !isnothing(sort_by)
         if sort_by ∈ keys(sorter)
-            sort!(file_metrics; by=sorter[sort_by])
+            sort!(file_metrics; by = sorter[sort_by])
         else
             error("Cannot sort by $sort_by, must be one of $(keys(sorter))")
         end
@@ -92,22 +92,22 @@ function show_coverage(metrics::PackageCoverage; sort_by=nothing)
     highlighters = (
         Highlighter(
             (data, i, j) -> j == 5 && row_coverage[i] <= 50,
-            bold=true,
-            foreground=:red,
+            bold = true,
+            foreground = :red,
         ),
-        Highlighter((data, i, j) -> j == 5 && row_coverage[i] >= 90, foreground=:green),
+        Highlighter((data, i, j) -> j == 5 && row_coverage[i] >= 90, foreground = :green),
     )
 
     table_str = pretty_table(
         table,
-        header=["File name", "Total", "Hit", "Missed", "Coverage"],
-        alignment=[:l, :r, :r, :r, :r],
-        crop=:none,
-        linebreaks=true,
-        columns_width=[maximum(length.(table[:, 1])), 6, 6, 6, 8],
-        autowrap=false,
-        highlighters=highlighters,
-        body_hlines=[size(table, 1) - 1],
+        header = ["File name", "Total", "Hit", "Missed", "Coverage"],
+        alignment = [:l, :r, :r, :r, :r],
+        crop = :none,
+        linebreaks = true,
+        columns_width = [maximum(length.(table[:, 1])), 6, 6, 6, 8],
+        autowrap = false,
+        highlighters = highlighters,
+        body_hlines = [size(table, 1) - 1],
     )
     println(table_str)
 
@@ -127,8 +127,8 @@ generate_coverage_html(
 creates a folder `covdir` in `root` and use the external `genhtml` program to
 write an HTML coverage report into that folder.
 """
-function generate_coverage_html(paths=["src", "ext"]; root=pwd(), kwargs...)
-    coverage = collect_coverage(paths; root=root)
+function generate_coverage_html(paths = ["src", "ext"]; root = pwd(), kwargs...)
+    coverage = collect_coverage(paths; root = root)
     generate_coverage_html(root, coverage; kwargs...)
 end
 
@@ -136,8 +136,8 @@ end
 function generate_coverage_html(
     root::String,
     coverage::Vector{LocalCoverage.CoverageTools.FileCoverage};
-    covdir="coverage",
-    genhtml="genhtml"
+    covdir = "coverage",
+    genhtml = "genhtml"
 )
     root = abspath(normpath(root))
     covdir = normpath(root, covdir)
@@ -211,21 +211,21 @@ the `julia` executable that is run as the subprocess.
 This function is intended to be exposed in a project's development-REPL.
 """
 function test(
-    file="test/runtests.jl";
-    root=pwd(),
-    project="test",
-    code_coverage=joinpath(".coverage", "tracefile-%p.info"),
-    show_coverage=(code_coverage != "none"),
-    color=(Base.have_color === nothing ? "auto" : Base.have_color ? "yes" : "no"),
-    compiled_modules=(Bool(Base.JLOptions().use_compiled_modules) ? "yes" : "no"),
-    startup_file=(Base.JLOptions().startupfile == 1 ? "yes" : "no"),
-    depwarn=(Base.JLOptions().depwarn == 2 ? "error" : "yes"),
-    inline=(Bool(Base.JLOptions().can_inline) ? "yes" : "no"),
-    track_allocation=(("none", "user", "all")[Base.JLOptions().malloc_log+1]),
-    check_bounds="yes",
-    threads=Threads.nthreads(),
-    genhtml::Union{Bool,AbstractString}=false,
-    covdir="coverage"
+    file = "test/runtests.jl";
+    root = pwd(),
+    project = "test",
+    code_coverage = joinpath(".coverage", "tracefile-%p.info"),
+    show_coverage = (code_coverage != "none"),
+    color = (Base.have_color === nothing ? "auto" : Base.have_color ? "yes" : "no"),
+    compiled_modules = (Bool(Base.JLOptions().use_compiled_modules) ? "yes" : "no"),
+    startup_file = (Base.JLOptions().startupfile == 1 ? "yes" : "no"),
+    depwarn = (Base.JLOptions().depwarn == 2 ? "error" : "yes"),
+    inline = (Bool(Base.JLOptions().can_inline) ? "yes" : "no"),
+    track_allocation = (("none", "user", "all")[Base.JLOptions().malloc_log+1]),
+    check_bounds = "yes",
+    threads = Threads.nthreads(),
+    genhtml::Union{Bool,AbstractString} = false,
+    covdir = "coverage"
 )
     root = abspath(normpath(root))
     if !(startswith(code_coverage, "@") || code_coverage in ["none", "user", "all"])
@@ -252,10 +252,10 @@ function test(
         "include(\"$file\")"
     ]
     @info "Running '$(join(cmd, " "))' in subprocess"
-    run(Cmd(Cmd(cmd), dir=root))
+    run(Cmd(Cmd(cmd), dir = root))
     if show_coverage || genhtml
         logger = Logging.SimpleLogger(stderr, Logging.Error)
-        coverage = collect_coverage(; root=root)
+        coverage = collect_coverage(; root = root)
         if show_coverage
             metrics = eval_coverage_metrics(coverage, root)
             _show_coverage_func(metrics)
