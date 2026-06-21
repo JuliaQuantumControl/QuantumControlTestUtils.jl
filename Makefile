@@ -1,4 +1,4 @@
-.PHONY: help test docs clean distclean devrepl codestyle servedocs
+.PHONY: help test docs clean distclean devrepl codestyle servedocs check-changelog changelog
 .DEFAULT_GOAL := help
 
 JULIA ?= julia
@@ -49,7 +49,14 @@ clean: ## Clean up build/doc/testing artifacts
 
 codestyle: test/Manifest.toml ../.JuliaFormatter.toml  ## Apply the codestyle to the entire project
 	$(JULIA) --project=test -e 'using JuliaFormatter; format(".", verbose=true)'
+	$(MAKE) check-changelog
 	@echo "Done. Consider using 'make devrepl'"
+
+check-changelog: ## Validate the links in CHANGELOG.md (no network)
+	$(JULIA) test/check_changelog.jl
+
+changelog: ## Validate CHANGELOG.md and add any missing issue/PR link targets
+	$(JULIA) test/check_changelog.jl --fix
 
 distclean: clean ## Restore to a clean checkout state
 	$(JULIA) -e 'include("test/clean.jl"); clean(distclean=true)'
