@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * Changed: The minimum supported Julia version is now 1.10 (LTS)
+* Changed: `QuantumControlTestUtils` no longer depends on `QuantumControl` or any other non-standard-library package, so it can never restrict the versions of other packages in a test environment
+* Changed: `random_dynamic_generator` now returns the terms of the generator instead of a `Generator`. Replace `random_dynamic_generator(N, tlist; kwargs...)` with `hamiltonian(random_dynamic_generator(N, tlist; kwargs...)...)`, using `hamiltonian` from `QuantumPropagators` or `QuantumControl`
+* Removed: `dummy_control_problem` and `optimize_with_dummy_method` (`QuantumControlTestUtils.DummyOptimization`). These are now available as `QuantumControl.DummyOptimization.dummy_control_problem` and `QuantumControl.DummyOptimization.optimize_with_dummy_method` in QuantumControl ≥ 0.11.5
+* Removed: The test runner and coverage tools (`test`, `show_coverage`, `generate_coverage_html`). Use `make test` and `make coverage` instead, see the [contributing guidelines](https://github.com/JuliaQuantumControl/.github/blob/master/CONTRIBUTING.md)
+* Removed: `QuantumTestLogger`
 
 ## [v0.3.2] — 2026-06-21
 

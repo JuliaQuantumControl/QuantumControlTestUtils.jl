@@ -1,3 +1,11 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 QuantumControlTestUtils = "d3fd27c9-1dfb-4e67-b0c0-90d0d87a1e48"
+
+[sources]
+QuantumControlTestUtils = {path = ".."}
+
+[compat]
+Documenter = "1.1"
+julia = "1.10"
