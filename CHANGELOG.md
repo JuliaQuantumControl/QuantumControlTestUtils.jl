@@ -3,7 +3,11 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [Unreleased]
+
+
+## [v0.4.0] — 2026-09-15
 
 * Changed: The minimum supported Julia version is now 1.10 (LTS)
 * Changed: `QuantumControlTestUtils` no longer depends on `QuantumControl` or any other non-standard-library package, so it can never restrict the versions of other packages in a test environment
@@ -64,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial public release, providing the `test` runner, the `RandomObjects` submodule (`random_state_vector`, `random_matrix`, and variants), and the `QuantumTestLogger`.
 
-[Unreleased]: https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl/compare/v0.3.2..HEAD
+[Unreleased]: https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl/compare/v0.4.0..HEAD
+[v0.4.0]: https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl/releases/tag/v0.4.0
 [v0.3.2]: https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl/releases/tag/v0.3.2
 [v0.3.1]: https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl/releases/tag/v0.3.1
 [v0.3.0]: https://github.com/JuliaQuantumControl/QuantumControlTestUtils.jl/releases/tag/v0.3.0
