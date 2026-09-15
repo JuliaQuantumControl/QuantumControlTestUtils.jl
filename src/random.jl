@@ -4,8 +4,6 @@ using Random
 using LinearAlgebra
 using SparseArrays
 
-using QuantumControl.QuantumPropagators.Generators: Generator
-
 export random_state_vector, random_matrix, random_dynamic_generator
 
 
@@ -117,14 +115,22 @@ function random_matrix(
 end
 
 
-"""Construct a random dynamic generator (time-dependent Hamiltonian).
+"""Construct the terms of a random dynamic generator (time-dependent Hamiltonian).
 
 ```julia
-tlist = collection(range(0, 100, length=1001))
-Ĥ = random_dynamic_generator(N, tlist; kwargs...)
+using QuantumPropagators: hamiltonian
+
+tlist = collect(range(0, 100, length=1001))
+Ĥ = hamiltonian(random_dynamic_generator(N, tlist; kwargs...)...)
 ```
 
-by default initializes `Ĥ` as a real Hermitian `Generator` of dimension `N`.
+returns a tuple of terms that can be passed to `QuantumPropagators.hamiltonian`
+(or `QuantumControl.hamiltonian`) to obtain a `Generator`. The terms are the
+random drift operator followed by tuples `(Ĥₗ, ϵₗ)` of a random control operator
+`Ĥₗ` and a control amplitude `ϵₗ`. `QuantumControlTestUtils` does not depend on
+`QuantumPropagators`, so it does not construct the `Generator` itself.
+
+By default, the terms describe a real Hermitian generator of dimension `N`.
 The generator consists of one random drift term and one random control term
 with a random control amplitude value ∈ [-1, 1] for each interval of the given
 `tlist`. The spectral envelope of the generator will be 1.0. That is, the
@@ -208,7 +214,10 @@ function random_dynamic_generator(
             lmul!(η, Hₗ)
         end
     end
-    return Generator(ops, amplitudes)
+    # As in a `Generator`, the last `length(amplitudes)` operators are paired
+    # with the amplitudes, and any remaining operators are drift terms.
+    n_drift = length(ops) - length(amplitudes)
+    return (ops[1:n_drift]..., zip(ops[(n_drift+1):end], amplitudes)...)
 end
 
 

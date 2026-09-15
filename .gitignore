@@ -2,7 +2,8 @@
 *.jl.cov
 *.jl.*.mem
 *.jl.mem
-*.info
+/lcov.info
 Manifest.toml
 /docs/build/
-/coverage
+/coverage/
+/.JuliaFormatter.toml
